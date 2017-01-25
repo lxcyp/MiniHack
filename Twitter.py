@@ -35,7 +35,9 @@ def grabUserTweets(Username, CheckFor200 = True):
             tweets = api.user_timeline(screen_name=Username, count=200, start_id=lastID)
             for tweet in tweets:
                 if not tweet.text.startswith("RT"):
-                    returnTweets[tweet.id] = tweet.text
+                    print(re.sub(r'^https?:\/\/.*[\r\n]*', '', tweet.text, flags=re.MULTILINE))
+                    returnTweets[tweet.id] = re.sub(r'^https?:\/\/.*[\r\n]*', '', tweet.text, flags=re.MULTILINE)
+                    #re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
         else:
             print("fuck")
             return returnTweets
@@ -55,6 +57,24 @@ def saveTweets(Username):
             json.dump(tweets, jsonOut)
             return tweets
 
+def saveMarkovTuples(Username, Tweets):
+    tuples = []
+    for tweet in Tweets:
+        tweetsplit = Tweets[tweet].split(" ")
+
+        for i in range(len(tweetsplit) - 1):
+            tuples.append((tweetsplit[i], tweetsplit[i + 1]))
+
+    with open("data/" + Username + ".tuples.json", 'w') as jsonOut:
+        json.dump(tuples, jsonOut)
+        return tuples
+
+def markovAndTweet(Username):
+    '''
+    Prepares markov tuples and passes to markov chain method
+    '''
+    # TODO: Pass to Lucy's markov chain
+    return saveMarkovTuples(Username,saveTweets(Username))
 
 
 class MyListener(tweepy.StreamListener):
@@ -69,4 +89,4 @@ class MyListener(tweepy.StreamListener):
                 # TODO: Call markov chain and tweet
 
 #tweets = grabUserTweets('JimJam707',False)
-print(saveTweets("JimJam707"))
+markovAndTweet('realDonaldTrump')
