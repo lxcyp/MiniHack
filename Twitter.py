@@ -5,6 +5,8 @@ import tweepy
 import config
 import json
 import os
+import re
+import markov
 
 
 def getAuth():
@@ -25,7 +27,7 @@ def grabUserTweets(Username, CheckFor200 = True):
     tweets = api.user_timeline(screen_name=Username, count=200)
     for tweet in tweets:
         if not tweet.text.startswith("RT") :
-            returnTweets[tweet.id] = tweet.text
+            returnTweets[tweet.id] = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet.text)
 
 
     if CheckFor200:
@@ -35,9 +37,8 @@ def grabUserTweets(Username, CheckFor200 = True):
             tweets = api.user_timeline(screen_name=Username, count=200, start_id=lastID)
             for tweet in tweets:
                 if not tweet.text.startswith("RT"):
-                    print(re.sub(r'^https?:\/\/.*[\r\n]*', '', tweet.text, flags=re.MULTILINE))
-                    returnTweets[tweet.id] = re.sub(r'^https?:\/\/.*[\r\n]*', '', tweet.text, flags=re.MULTILINE)
-                    #re.sub(r'^https?:\/\/.*[\r\n]*', '', text, flags=re.MULTILINE)
+
+                    returnTweets[tweet.id] = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet.text)
         else:
             print("fuck")
             return returnTweets
@@ -74,7 +75,7 @@ def markovAndTweet(Username):
     Prepares markov tuples and passes to markov chain method
     '''
     # TODO: Pass to Lucy's markov chain
-    return saveMarkovTuples(Username,saveTweets(Username))
+    markov.buildChain(saveMarkovTuples(Username,saveTweets(Username)))
 
 
 class MyListener(tweepy.StreamListener):
@@ -87,6 +88,7 @@ class MyListener(tweepy.StreamListener):
                 print(userMention['screen_name'])
                 # Its not us, do something with it..
                 # TODO: Call markov chain and tweet
+                markovAndTweet(userMention['screen_name'])
 
 #tweets = grabUserTweets('JimJam707',False)
 markovAndTweet('realDonaldTrump')
