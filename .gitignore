@@ -1,3 +1,5 @@
 test.cfg
 .idea/*
 data/*
+*.pyc
+past_tweets.txt
