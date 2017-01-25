@@ -6,7 +6,11 @@ import config
 import json
 import os
 import re
-from markov import  buildChain
+import random
+
+
+TWEET_LENGTH = 140
+LOG_FILE = "past tweets.txt"
 
 
 def getAuth():
@@ -70,6 +74,39 @@ def saveMarkovTuples(Username, Tweets):
         json.dump(tuples, jsonOut)
         return tuples
 
+def buildChain(markov_array):
+    TWEET_MAX = 140
+    current_tweet = ""
+    finished_tweet = False
+    first_tuple = random.choice(markov_array)
+    current_tweet += first_tuple[0]
+    next_word = first_tuple[1]
+    start_word = next_word
+
+    while not finished_tweet:
+        finished_tweet = True
+        next_word = findWord(start_word, markov_array)
+        if len(current_tweet) + len(next_word) + 1 < 140:
+            finished_tweet = False
+            current_tweet = current_tweet + " " + next_word
+            start_word = next_word
+
+    tweetString(current_tweet)
+
+
+def findWord(last_word, markov_array):
+    candidate_words = []
+    for i in markov_array:
+        if i[0] == last_word:
+            candidate_words.append(i[1])
+
+    if len(candidate_words) == 0:
+        return " "
+    else:
+        return random.choice(candidate_words)
+
+
+
 def markovAndTweet(Username):
     '''
     Prepares markov tuples and passes to markov chain method
@@ -77,6 +114,7 @@ def markovAndTweet(Username):
     # TODO: Pass to Lucy's markov chain
     chain = saveMarkovTuples(Username,saveTweets(Username))
     buildChain(chain)
+
 
 
 class MyListener(tweepy.StreamListener):
@@ -91,5 +129,41 @@ class MyListener(tweepy.StreamListener):
                 # TODO: Call markov chain and tweet
                 markovAndTweet(userMention['screen_name'])
 
+
+
+auth = getAuth()
+
+def tweetString(tweet):
+    tweet = stripTweet(tweet)
+    """Takes a string and tweets it"""
+    if len(tweet) > TWEET_LENGTH:
+        print("Tweet length greater than", TWEET_LENGTH)
+
+    elif len(tweet) == 0:
+        print("Tweet length is 0")
+
+    else:
+        print("Tweeting:", tweet)
+        try:
+            api = tweepy.API(auth)
+            api.update_status(tweet)
+            logTweet(tweet)
+        except Exception as e:
+            print("Tweet failed")
+            print(str(e))
+
+def stripTweet(tweet):
+    """Removes @ symbols from tweets"""
+    return tweet.replace('@', '')
+
+def logTweet(tweet):
+    """Logs tweet to LOG_FILE"""
+    file = open(LOG_FILE, 'a')
+    file.write(tweet + "\n")
+    file.close()
+
+
 #tweets = grabUserTweets('JimJam707',False)
-markovAndTweet('realDonaldTrump')
+#markovAndTweet('realDonaldTrump')
+
+createStream(config.getBotUsername())

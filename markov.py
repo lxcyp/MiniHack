@@ -37,6 +37,6 @@ def findWord(last_word, markov_array):
         return random.choice(candidate_words)
 
 
-markov_array = [("hi","dog")]
+#markov_array = [("hi","dog")]
 
-buildChain(markov_array)
+#buildChain(markov_array)
