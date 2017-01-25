@@ -6,6 +6,7 @@ LOG_FILE = "past tweets.txt"
 auth = Twitter.getAuth()
 
 def tweetString(tweet):
+    tweet = stripTweet(tweet)
     """Takes a string and tweets it"""
     if len(tweet) > TWEET_LENGTH:
         print("Tweet length greater than", TWEET_LENGTH)
@@ -20,8 +21,12 @@ def tweetString(tweet):
         except:
             print("Tweet failed")
 
+def stripTweet(tweet):
+    """Removes @ symbols from tweets"""
+    return tweet.replace('@', '')
+
 def logTweet(tweet):
+    """Logs tweet to LOG_FILE"""
     file = open(LOG_FILE, 'a')
     file.write(tweet + "\n")
     file.close()
-    
