@@ -6,7 +6,7 @@ import config
 import json
 import os
 import re
-import markov
+from markov import  buildChain
 
 
 def getAuth():
@@ -75,7 +75,8 @@ def markovAndTweet(Username):
     Prepares markov tuples and passes to markov chain method
     '''
     # TODO: Pass to Lucy's markov chain
-    markov.buildChain(saveMarkovTuples(Username,saveTweets(Username)))
+    chain = saveMarkovTuples(Username,saveTweets(Username))
+    buildChain(chain)
 
 
 class MyListener(tweepy.StreamListener):
@@ -91,4 +92,4 @@ class MyListener(tweepy.StreamListener):
                 markovAndTweet(userMention['screen_name'])
 
 #tweets = grabUserTweets('JimJam707',False)
-#markovAndTweet('realDonaldTrump')
+markovAndTweet('realDonaldTrump')
