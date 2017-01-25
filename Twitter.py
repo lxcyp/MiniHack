@@ -4,7 +4,7 @@
 import tweepy
 import config
 import json
-from tweepy.streaming import StreamListener
+
 
 def getAuth():
     auth = tweepy.OAuthHandler(config.getApiKey(), config.getApiSecret())
@@ -17,7 +17,27 @@ def createStream(Username):
     streamListener = tweepy.Stream(auth = auth, listener=MyListener())
     streamListener.filter(track=[config.getBotUsername()])
 
-class MyListener(StreamListener):
+def grabUserTweets(Username):
+    # TODO: Fix!! If a user does not have >= 200 non RT tweets this will endlessly loop and probabaly end the world
+    returnTweets = []
+    api = tweepy.API(getAuth())
+    tweets = api.user_timeline(screen_name=Username, count=200)
+    for tweet in tweets:
+        if not tweet.text.startswith("RT") :
+            returnTweets.append(tweet.text)
+
+    while len(returnTweets) <= 200:
+        lastID = tweets[-1].id
+        tweets = api.user_timeline(screen_name=Username, count=200, start_id=lastID)
+        for tweet in tweets:
+            if not tweet.text.startswith("RT"):
+                returnTweets.append(tweet.text)
+    else:
+        return returnTweets
+    return returnTweets
+
+
+class MyListener(tweepy.StreamListener):
     def on_data(self, data):
         decoded = json.loads(data)
         entities = decoded['entities']
@@ -27,4 +47,3 @@ class MyListener(StreamListener):
                 print(userMention['screen_name'])
                 # Its not us, do something with it..
                 # TODO: Call markov chain and tweet
-
