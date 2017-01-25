@@ -4,6 +4,7 @@
 import tweepy
 import config
 import json
+import os
 
 
 def getAuth():
@@ -17,24 +18,43 @@ def createStream(Username):
     streamListener = tweepy.Stream(auth = auth, listener=MyListener())
     streamListener.filter(track=[config.getBotUsername()])
 
-def grabUserTweets(Username):
+def grabUserTweets(Username, CheckFor200 = True):
     # TODO: Fix!! If a user does not have >= 200 non RT tweets this will endlessly loop and probabaly end the world
-    returnTweets = []
+    returnTweets = {}
     api = tweepy.API(getAuth())
     tweets = api.user_timeline(screen_name=Username, count=200)
     for tweet in tweets:
         if not tweet.text.startswith("RT") :
-            returnTweets.append(tweet.text)
+            returnTweets[tweet.id] = tweet.text
 
-    while len(returnTweets) <= 200:
-        lastID = tweets[-1].id
-        tweets = api.user_timeline(screen_name=Username, count=200, start_id=lastID)
-        for tweet in tweets:
-            if not tweet.text.startswith("RT"):
-                returnTweets.append(tweet.text)
-    else:
-        return returnTweets
+
+    if CheckFor200:
+        while len(returnTweets) <= 200:
+            lastID = tweets[-1].id
+            print(lastID)
+            tweets = api.user_timeline(screen_name=Username, count=200, start_id=lastID)
+            for tweet in tweets:
+                if not tweet.text.startswith("RT"):
+                    returnTweets[tweet.id] = tweet.text
+        else:
+            print("fuck")
+            return returnTweets
     return returnTweets
+
+def saveTweets(Username):
+    if not os.path.isdir("data/"):
+        os.makedirs('data/')
+    if os.path.isfile('data/'+Username+'.json'):
+        # Database already exists, read it in and add to it
+        with open('data/'+Username+'.json') as jsonIn:
+            oldTweets = json.load(jsonIn)
+            return oldTweets
+    else:
+        with open("data/"+Username+".json", 'w') as jsonOut:
+            tweets = grabUserTweets(Username, False)
+            json.dump(tweets, jsonOut)
+            return tweets
+
 
 
 class MyListener(tweepy.StreamListener):
@@ -47,3 +67,6 @@ class MyListener(tweepy.StreamListener):
                 print(userMention['screen_name'])
                 # Its not us, do something with it..
                 # TODO: Call markov chain and tweet
+
+#tweets = grabUserTweets('JimJam707',False)
+print(saveTweets("JimJam707"))
