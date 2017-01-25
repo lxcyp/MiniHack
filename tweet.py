@@ -3,15 +3,7 @@ import configparser
 
 TWEET_LENGTH = 140
 
-def readConfig():
-    path = sys.path[0]
-    config = configparser.ConfigParser()
-    config.read(path + '/test.cfg')
-
-    bot_username = config.get('TWITTER', 'bot_username')
-    api_key = config.get('TWITTER', 'api_key')
-    api_secret = config.get('TWITTER', 'api_secret')
-    return bot_username, api_key, api_secret
+tweepy.
 
 def tweetString(tweet):
     """Takes a string and tweets it"""
@@ -22,7 +14,7 @@ def tweetString(tweet):
     else:
         print("Tweeting:", tweet)
         try:
-            print("tweet")
+            api.update_status(tweet)
         except:
             print("Tweet failed")
 
