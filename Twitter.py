@@ -91,4 +91,4 @@ class MyListener(tweepy.StreamListener):
                 markovAndTweet(userMention['screen_name'])
 
 #tweets = grabUserTweets('JimJam707',False)
-markovAndTweet('realDonaldTrump')
+#markovAndTweet('realDonaldTrump')

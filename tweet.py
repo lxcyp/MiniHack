@@ -7,7 +7,6 @@ auth = Twitter.getAuth()
 
 def tweetString(tweet):
     tweet = stripTweet(tweet)
-    tweet[0] = tweet[0].upper() #capitalize first letter
     """Takes a string and tweets it"""
     if len(tweet) > TWEET_LENGTH:
         print("Tweet length greater than", TWEET_LENGTH)
