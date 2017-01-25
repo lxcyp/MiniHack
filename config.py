@@ -37,5 +37,5 @@ def getAccessSecret():
     config = configparser.ConfigParser()
     config.read(path + '/test.cfg')
 
-    access_tokensecret = config.get('TWITTER', 'access_tokensecret')
+    access_tokensecret = config.get('TWITTER', 'access_secret')
     return access_tokensecret
