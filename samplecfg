@@ -1,0 +1,6 @@
+[TWITTER]
+bot_username = TwitterHandle
+api_key = API Key
+api_secret = API Secret
+access_token = Access Token
+access_secret = Access Secret
