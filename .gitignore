@@ -1,2 +1,4 @@
 *.cfg
+past tweets.txt
 .idea/*
+*.pyc
