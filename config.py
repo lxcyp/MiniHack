@@ -1,3 +1,4 @@
+# Uses configparser to return details
 import configparser, sys
 
 def getBotUsername():
@@ -23,3 +24,18 @@ def getApiSecret():
     api_secret = config.get('TWITTER', 'api_secret')
     return api_secret
 
+def getAccessToken():
+    path = sys.path[0]
+    config = configparser.ConfigParser()
+    config.read(path + '/test.cfg')
+
+    access_token = config.get('TWITTER', 'access_token')
+    return access_token
+
+def getAccessSecret():
+    path = sys.path[0]
+    config = configparser.ConfigParser()
+    config.read(path + '/test.cfg')
+
+    access_tokensecret = config.get('TWITTER', 'access_tokensecret')
+    return access_tokensecret
