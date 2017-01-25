@@ -1,9 +1,9 @@
-import tweepy, sys
-import configparser
+import Twitter, tweepy
 
 TWEET_LENGTH = 140
+LOG_FILE = "past tweets.txt"
 
-tweepy.
+auth = Twitter.getAuth()
 
 def tweetString(tweet):
     """Takes a string and tweets it"""
@@ -14,9 +14,14 @@ def tweetString(tweet):
     else:
         print("Tweeting:", tweet)
         try:
+            api = tweepy.API(auth)
             api.update_status(tweet)
+            logTweet(tweet)
         except:
             print("Tweet failed")
 
-
-print(readConfig())
+def logTweet(tweet):
+    file = open(LOG_FILE, 'a')
+    file.write(tweet + "\n")
+    file.close()
+    
