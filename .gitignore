@@ -3,3 +3,4 @@ test.cfg
 data/*
 *.pyc
 past_tweets.txt
+past tweets.txt
