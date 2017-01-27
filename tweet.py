@@ -1,9 +1,9 @@
-import Twitter, tweepy
+import auth, tweepy
 
 TWEET_LENGTH = 140
 LOG_FILE = "past tweets.txt"
 
-auth = Twitter.getAuth()
+auth = auth.getAuth()
 
 def tweetString(tweet):
     tweet = stripTweet(tweet)

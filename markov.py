@@ -1,12 +1,11 @@
 import random
 import json
 import configparser
-import Twitter
 import tweet
 import random
 
-def buildChain(markov_array):
-    TWEET_MAX = 140
+def buildChain(markov_array, starting_length):
+    TWEET_MAX = 140 - starting_length
     current_tweet = ""
     finished_tweet = False
     first_tuple = random.choice(markov_array)
@@ -24,7 +23,6 @@ def buildChain(markov_array):
 
     tweet.tweetString(current_tweet)
 
-
 def findWord(last_word, markov_array):
     candidate_words = []
     for i in markov_array:
@@ -35,8 +33,3 @@ def findWord(last_word, markov_array):
         return " "
     else:
         return random.choice(candidate_words)
-
-
-#markov_array = [("hi","dog")]
-
-#buildChain(markov_array)

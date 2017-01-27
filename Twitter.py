@@ -7,21 +7,36 @@ import json
 import os
 import re
 import random
+from time import strftime
 
+import markov, auth
+import tweet as tweeter
 
 TWEET_LENGTH = 140
 LOG_FILE = "past tweets.txt"
 
+class MyListener(tweepy.StreamListener):
+    def on_data(self, data):
+        decoded = json.loads(data)
+        entities = decoded['entities']
+        userMentions = entities['user_mentions']
+        for userMention in userMentions:
+            if userMention['screen_name'] != config.getBotUsername():
+                print(userMention['screen_name'])
+                # Its not us, do something with it..
+                markovAndTweet(userMention['screen_name'])
 
-def getAuth():
-    auth = tweepy.OAuthHandler(config.getApiKey(), config.getApiSecret())
-    auth.set_access_token(config.getAccessToken(),config.getAccessSecret())
-
-    return auth
+    def on_error(self, status_code):
+        if status_code == 420:
+            # We are being rate limited by Twitter =(
+            # Disconnect from the stream
+            return False
+        else:
+            # Any other error, return true to keep the stream open
+            return True
 
 def createStream(Username):
-    auth = getAuth()
-    streamListener = tweepy.Stream(auth = auth, listener=MyListener())
+    streamListener = tweepy.Stream(auth.getAuth(), MyListener())
     streamListener.filter(track=[config.getBotUsername()])
 
 def grabUserTweets(Username, CheckFor200 = True):
@@ -33,7 +48,6 @@ def grabUserTweets(Username, CheckFor200 = True):
         if not tweet.text.startswith("RT") :
             returnTweets[tweet.id] = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet.text)
 
-
     if CheckFor200:
         while len(returnTweets) <= 200:
             lastID = tweets[-1].id
@@ -44,7 +58,6 @@ def grabUserTweets(Username, CheckFor200 = True):
 
                     returnTweets[tweet.id] = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet.text)
         else:
-            print("fuck")
             return returnTweets
     return returnTweets
 
@@ -74,101 +87,13 @@ def saveMarkovTuples(Username, Tweets):
         json.dump(tuples, jsonOut)
         return tuples
 
-def buildChain(markov_array):
-    TWEET_MAX = 140
-    current_tweet = ""
-    finished_tweet = False
-    first_tuple = random.choice(markov_array)
-    current_tweet += first_tuple[0]
-    next_word = first_tuple[1]
-    start_word = next_word
-
-    while not finished_tweet:
-        finished_tweet = True
-        next_word = findWord(start_word, markov_array)
-        if len(current_tweet) + len(next_word) + 1 < 140:
-            finished_tweet = False
-            current_tweet = current_tweet + " " + next_word
-            start_word = next_word
-
-    tweetString(current_tweet)
-
-
-def findWord(last_word, markov_array):
-    candidate_words = []
-    for i in markov_array:
-        if i[0] == last_word:
-            candidate_words.append(i[1])
-
-    if len(candidate_words) == 0:
-        return " "
-    else:
-        return random.choice(candidate_words)
-
-
-
 def markovAndTweet(Username):
     '''Prepares markov tuples and passes to markov chain method'''
     chain = saveMarkovTuples(Username,saveTweets(Username))
-    buildChain(chain)
+    preix = Username + " - " 
+    toTweet = markov.buildChain(chain, len(prefix))
+    tweeter.tweetString(prefix + toTweet)
 
-
-
-class MyListener(tweepy.StreamListener):
-    def on_data(self, data):
-        decoded = json.loads(data)
-        entities = decoded['entities']
-        userMentions = entities['user_mentions']
-        for userMention in userMentions:
-            if userMention['screen_name'] != config.getBotUsername():
-                print(userMention['screen_name'])
-                # Its not us, do something with it..
-                markovAndTweet(userMention['screen_name'])
-
-    def on_error(self, status_code):
-        if status_code == 420:
-            # We are being rate limited by Twitter =(
-            # Disconnect from the stream
-            return False
-        else:
-            # Any other error, return true to keep the stream open
-            return True
-
-
-
-auth = getAuth()
-
-def tweetString(tweet):
-    tweet = stripTweet(tweet)
-    """Takes a string and tweets it"""
-    if len(tweet) > TWEET_LENGTH:
-        print("Tweet length greater than", TWEET_LENGTH)
-
-    elif len(tweet) == 0:
-        print("Tweet length is 0")
-
-    else:
-        print("Tweeting:", tweet)
-        try:
-            api = tweepy.API(auth)
-            api.update_status(tweet)
-            logTweet(tweet)
-        except Exception as e:
-            print("Tweet failed")
-            print(str(e))
-
-def stripTweet(tweet):
-    """Removes @ symbols from tweets"""
-    return tweet.replace('@', '')
-
-def logTweet(tweet):
-    """Logs tweet to LOG_FILE"""
-    file = open(LOG_FILE, 'a')
-    file.write(tweet + "\n")
-    file.close()
-
-
-#tweets = grabUserTweets('JimJam707',False)
-#markovAndTweet('realDonaldTrump')
-
-createStream(config.getBotUsername())
+if __name__ == "__main__":
+    print("BarkovChain Initialized on", strftime("%d/%m/%Y"), "@", strftime("%H:%M:%S"))
+    createStream(config.getBotUsername())
