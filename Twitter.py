@@ -108,10 +108,7 @@ def findWord(last_word, markov_array):
 
 
 def markovAndTweet(Username):
-    '''
-    Prepares markov tuples and passes to markov chain method
-    '''
-    # TODO: Pass to Lucy's markov chain
+    '''Prepares markov tuples and passes to markov chain method'''
     chain = saveMarkovTuples(Username,saveTweets(Username))
     buildChain(chain)
 
@@ -126,8 +123,16 @@ class MyListener(tweepy.StreamListener):
             if userMention['screen_name'] != config.getBotUsername():
                 print(userMention['screen_name'])
                 # Its not us, do something with it..
-                # TODO: Call markov chain and tweet
                 markovAndTweet(userMention['screen_name'])
+
+    def on_error(self, status_code):
+        if status_code == 420:
+            # We are being rate limited by Twitter =(
+            # Disconnect from the stream
+            return False
+        else:
+            # Any other error, return true to keep the stream open
+            return True
 
 
 
