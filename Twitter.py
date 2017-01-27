@@ -90,7 +90,7 @@ def saveMarkovTuples(Username, Tweets):
 def markovAndTweet(Username):
     '''Prepares markov tuples and passes to markov chain method'''
     chain = saveMarkovTuples(Username,saveTweets(Username))
-    preix = Username + " - " 
+    prefix = Username + " - " 
     toTweet = markov.buildChain(chain, len(prefix))
     tweeter.tweetString(prefix + toTweet)
 
